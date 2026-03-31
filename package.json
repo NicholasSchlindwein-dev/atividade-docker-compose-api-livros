@@ -1,0 +1,13 @@
+{
+  "name": "atividade-docker-compose-usuarios",
+  "version": "1.0.0",
+  "description": "API simples de usuários com Node.js, Express e MySQL para atividade com Docker Compose.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mysql2": "^3.14.1"
+  }
+}
