@@ -1,11 +1,9 @@
-# Atividade Docker Compose - API de Usuários
+# API de Livros — Docker Compose
 
-Este projeto atende ao requisito de entrega com **Docker Compose** e **múltiplos containers**, utilizando:
+Projeto de API REST para gerenciamento de livros, com **dois containers** orquestrados via Docker Compose:
 
 - **Container 1:** aplicação Node.js + Express
 - **Container 2:** banco de dados MySQL 8
-
-A aplicação expõe uma **API REST de usuários** com operações de CRUD.
 
 ## Tecnologias utilizadas
 
@@ -33,8 +31,8 @@ A aplicação expõe uma **API REST de usuários** com operações de CRUD.
 ## Como funciona cada arquivo
 
 ### `docker-compose.yml`
-Define os dois serviços da atividade:
-- `app`: container da API
+Define os dois serviços:
+- `app`: container da API Node.js
 - `db`: container do MySQL
 
 Também define volume para persistência do banco.
@@ -43,13 +41,13 @@ Também define volume para persistência do banco.
 Cria a imagem da aplicação Node.js.
 
 ### `src/index.js`
-Contém a API Express e os endpoints de CRUD de usuários.
+Contém a API Express com os cinco endpoints de CRUD de livros.
 
 ### `src/db.js`
-Responsável pela conexão com o MySQL, incluindo tentativas de reconexão até o banco ficar disponível.
+Gerencia a conexão com o MySQL, com tentativas de reconexão até o banco ficar disponível.
 
 ### `db/init.sql`
-Cria a tabela `usuarios` e insere dois registros iniciais.
+Cria a tabela `livros` e insere três registros iniciais de exemplo.
 
 ---
 
@@ -77,115 +75,104 @@ docker compose ps
 
 ## Acessos
 
-### Página inicial da aplicação
-
-```text
-http://localhost:3000
-```
-
-### Endpoint para listar usuários
-
-```text
-http://localhost:3000/usuarios
-```
-
-### Porta do banco
-
-```text
-localhost:3306
-```
+| Recurso | Endereço |
+|---|---|
+| Página inicial | `http://localhost:3000` |
+| Endpoint de livros | `http://localhost:3000/livros` |
+| Porta do banco | `localhost:3306` |
 
 ---
 
 ## Endpoints da API
 
-## 1. Listar usuários
+### 1. Listar livros
 
-### Como funciona
-Consulta todos os registros da tabela `usuarios` e retorna em JSON.
+Retorna todos os livros cadastrados.
 
 ```http
-GET /usuarios
+GET /livros
 ```
 
-Exemplo:
-
 ```bash
-curl http://localhost:3000/usuarios
+curl http://localhost:3000/livros
+```
+
+Resposta de exemplo:
+
+```json
+[
+  { "id": 1, "titulo": "Dom Casmurro", "autor": "Machado de Assis", "ano": 1899, "genero": "Romance" },
+  { "id": 2, "titulo": "O Senhor dos Anéis", "autor": "J.R.R. Tolkien", "ano": 1954, "genero": "Fantasia" },
+  { "id": 3, "titulo": "1984", "autor": "George Orwell", "ano": 1949, "genero": "Distopia" }
+]
 ```
 
 ---
 
-## 2. Buscar usuário por ID
+### 2. Buscar livro por ID
 
-### Como funciona
-Consulta um único usuário pelo identificador informado na rota.
+Retorna um único livro pelo seu identificador.
 
 ```http
-GET /usuarios/{id}
+GET /livros/{id}
 ```
 
-Exemplo:
-
 ```bash
-curl http://localhost:3000/usuarios/1
+curl http://localhost:3000/livros/1
 ```
 
 ---
 
-## 3. Criar usuário
+### 3. Criar livro
 
-### Como funciona
-Recebe `nome` e `email` em JSON e grava no banco.
+Cadastra um novo livro. Os campos `titulo` e `autor` são obrigatórios; `ano` e `genero` são opcionais.
 
 ```http
-POST /usuarios
+POST /livros
 Content-Type: application/json
 ```
 
-Exemplo:
-
 ```bash
-curl -X POST http://localhost:3000/usuarios \
+curl -X POST http://localhost:3000/livros \
   -H "Content-Type: application/json" \
-  -d '{"nome":"Carlos Lima","email":"carlos@email.com"}'
+  -d '{"titulo":"O Hobbit","autor":"J.R.R. Tolkien","ano":1937,"genero":"Fantasia"}'
+```
+
+Resposta `201 Created`:
+
+```json
+{ "mensagem": "Livro criado com sucesso.", "id": 4, "titulo": "O Hobbit", "autor": "J.R.R. Tolkien", "ano": 1937, "genero": "Fantasia" }
 ```
 
 ---
 
-## 4. Atualizar usuário
+### 4. Atualizar livro
 
-### Como funciona
-Atualiza o nome e o e-mail do usuário pelo ID.
+Atualiza os dados de um livro pelo ID. Os campos `titulo` e `autor` são obrigatórios.
 
 ```http
-PUT /usuarios/{id}
+PUT /livros/{id}
 Content-Type: application/json
 ```
 
-Exemplo:
-
 ```bash
-curl -X PUT http://localhost:3000/usuarios/1 \
+curl -X PUT http://localhost:3000/livros/1 \
   -H "Content-Type: application/json" \
-  -d '{"nome":"João Atualizado","email":"joao.atualizado@email.com"}'
+  -d '{"titulo":"Dom Casmurro","autor":"Machado de Assis","ano":1899,"genero":"Romance Realista"}'
 ```
 
 ---
 
-## 5. Remover usuário
+### 5. Remover livro
 
-### Como funciona
-Exclui o usuário correspondente ao ID informado.
+Exclui o livro correspondente ao ID informado.
 
 ```http
-DELETE /usuarios/{id}
+DELETE /livros/{id}
 ```
 
-Exemplo:
-
 ```bash
-curl -X DELETE http://localhost:3000/usuarios/1
+curl -X DELETE http://localhost:3000/livros/1
 ```
 
 ---
@@ -204,20 +191,7 @@ docker compose down -v
 
 ---
 
-## Observações para entrega
+## Observações
 
-Para entregar ao professor, publique este projeto no GitHub e informe o link do repositório.
-
-Sugestão de nome do repositório:
-
-```text
-atividade-docker-compose-api-usuarios
-```
-
-## Configuração de Charset (UTF-8)
-
-Para garantir o correto armazenamento de caracteres especiais (como acentos), foi configurado:
-
-- MySQL com `utf8mb4`
-- Conexão da aplicação com `SET NAMES utf8mb4`
-- Script `init.sql` com charset explícito
+- O charset `utf8mb4` é configurado no MySQL e na conexão da aplicação para suporte completo a acentos e caracteres especiais.
+- O serviço `app` aguarda o `db` estar pronto antes de iniciar, com tentativas automáticas de reconexão.
