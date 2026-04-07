@@ -15,6 +15,8 @@ Projeto de API REST para gerenciamento de livros, com **dois containers** orques
 
 ## Estrutura do projeto
 
+Rode npm install no terminal, para conseguir rodar.
+
 ```text
 .
 ├── db
