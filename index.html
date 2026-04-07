@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API de Livros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F2EC;
+      --surface: #FDFAF5;
+      --surface-2: #EDE9E0;
+      --border: #D8D2C4;
+      --border-hover: #B8B0A0;
+      --text: #1A1714;
+      --text-muted: #7A7167;
+      --text-hint: #ADA79E;
+      --accent: #2C4A2E;
+      --accent-light: #EAF0EA;
+      --accent-text: #1A3A1C;
+      --danger: #7A2020;
+      --danger-light: #F5EAEA;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --serif: 'Fraunces', serif;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .layout {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-hint);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .header h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 32px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .header h1 em { font-style: italic; color: var(--text-muted); }
+    .header-url {
+      margin-top: 0.5rem;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-hint);
+      background: var(--surface-2);
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .section { margin-bottom: 1rem; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.75rem;
+    }
+    .section-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .section-tag.post { background: var(--accent-light); border-color: #B8CFBA; color: var(--accent-text); }
+    .section-tag.get  { background: #EAF0F8; border-color: #B8CDE0; color: #1A3A5C; }
+    .section-tag.put  { background: #F5F0E0; border-color: #D4C890; color: #4A3A10; }
+    .section-tag.del  { background: var(--danger-light); border-color: #D8AAAA; color: var(--danger); }
+    .section-title {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 9px 11px;
+      font-size: 14px;
+      font-family: var(--sans);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 0 3px rgba(44,74,46,0.08);
+    }
+    input::placeholder { color: var(--text-hint); }
+
+    .row { display: flex; gap: 8px; align-items: stretch; }
+    .row input { flex: 1; }
+    .btn-row { margin-top: 12px; }
+
+    button {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    button:hover { background: var(--border); }
+    button:active { transform: scale(0.98); }
+
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-text); border-color: var(--accent-text); }
+    .btn-danger { background: var(--danger-light); color: var(--danger); border-color: #D8AAAA; }
+    .btn-danger:hover { background: #EED8D8; }
+
+    .books-list { display: flex; flex-direction: column; gap: 6px; }
+    .book-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.15s;
+    }
+    .book-item:hover { border-color: var(--border-hover); }
+    .book-title { font-size: 14px; font-weight: 500; color: var(--text); }
+    .book-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .book-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-hint);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .list-empty { font-size: 13px; color: var(--text-hint); padding: 0.5rem 0; }
+
+    /* Resultado inline — oculto até a primeira requisição */
+    .result-inline {
+      display: none;
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+    .result-inline.visible { display: block; }
+    .result-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .result-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-hint);
+    }
+    .badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      display: none;
+    }
+    .badge.ok  { display: inline; background: var(--accent-light); color: var(--accent-text); border: 1px solid #B8CFBA; }
+    .badge.err { display: inline; background: var(--danger-light); color: var(--danger); border: 1px solid #D8AAAA; }
+
+    pre.resultado {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.875rem 1rem;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.7;
+    }
+
+    .spacer { height: 0.5rem; }
+
+    @media (max-width: 500px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+
+    <div class="header">
+      <div class="header-label">REST Client</div>
+      <h1>Biblioteca de <em>livros</em></h1>
+      <div class="header-url">localhost:3000/livros</div>
+    </div>
+
+    <!-- CRIAR -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-tag post">POST</span>
+        <span class="section-title">Criar livro</span>
+      </div>
+      <div class="card">
+        <div class="grid-2" style="gap:8px;margin-bottom:8px;">
+          <div class="field">
+            <label>Título</label>
+            <input type="text" id="titulo" placeholder="Ex: Dom Casmurro">
+          </div>
+          <div class="field">
+            <label>Autor</label>
+            <input type="text" id="autor" placeholder="Ex: Machado de Assis">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Ano</label>
+            <input type="number" id="ano" placeholder="1899">
+          </div>
+          <div class="field">
+            <label>Gênero</label>
+            <input type="text" id="genero" placeholder="Ex: Romance">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="criarLivro()">Criar livro</button>
+        </div>
+        <div class="result-inline" id="res-criar">
+          <div class="result-top">
+            <span class="result-label">Resposta</span>
+            <span class="badge" id="badge-criar"></span>
+          </div>
+          <pre class="resultado" id="pre-criar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- LISTAR -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-tag get">GET</span>
+        <span class="section-title">Lista de livros</span>
+      </div>
+      <div class="card">
+        <div id="books-list" class="books-list">
+          <p class="list-empty">Clique em "Atualizar" para carregar.</p>
+        </div>
+        <div class="btn-row">
+          <button onclick="listarLivros()">↻ Atualizar lista</button>
+        </div>
+        <div class="result-inline" id="res-listar">
+          <div class="result-top">
+            <span class="result-label">Resposta</span>
+            <span class="badge" id="badge-listar"></span>
+          </div>
+          <pre class="resultado" id="pre-listar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- BUSCAR -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-tag get">GET</span>
+        <span class="section-title">Buscar por ID</span>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="number" id="buscarId" placeholder="ID do livro">
+          <button onclick="buscarLivro()">Buscar</button>
+        </div>
+        <div class="result-inline" id="res-buscar">
+          <div class="result-top">
+            <span class="result-label">Resposta</span>
+            <span class="badge" id="badge-buscar"></span>
+          </div>
+          <pre class="resultado" id="pre-buscar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- ATUALIZAR -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-tag put">PUT</span>
+        <span class="section-title">Atualizar livro</span>
+      </div>
+      <div class="card">
+        <div class="field" style="margin-bottom:10px;">
+          <label>ID</label>
+          <input type="number" id="updateId" placeholder="ID do livro a atualizar">
+        </div>
+        <div class="grid-2" style="gap:8px;margin-bottom:8px;">
+          <div class="field">
+            <label>Novo título</label>
+            <input type="text" id="updateTitulo" placeholder="Título">
+          </div>
+          <div class="field">
+            <label>Novo autor</label>
+            <input type="text" id="updateAutor" placeholder="Autor">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Novo ano</label>
+            <input type="number" id="updateAno" placeholder="Ano">
+          </div>
+          <div class="field">
+            <label>Novo gênero</label>
+            <input type="text" id="updateGenero" placeholder="Gênero">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button onclick="atualizarLivro()">Salvar alterações</button>
+        </div>
+        <div class="result-inline" id="res-atualizar">
+          <div class="result-top">
+            <span class="result-label">Resposta</span>
+            <span class="badge" id="badge-atualizar"></span>
+          </div>
+          <pre class="resultado" id="pre-atualizar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- DELETAR -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-tag del">DELETE</span>
+        <span class="section-title">Deletar livro</span>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="number" id="deleteId" placeholder="ID do livro">
+          <button class="btn-danger" onclick="deletarLivro()">Deletar</button>
+        </div>
+        <div class="result-inline" id="res-deletar">
+          <div class="result-top">
+            <span class="result-label">Resposta</span>
+            <span class="badge" id="badge-deletar"></span>
+          </div>
+          <pre class="resultado" id="pre-deletar"></pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const api = "http://localhost:3000/livros";
+
+    function mostrar(secao, data, ok) {
+      const wrapper = document.getElementById(`res-${secao}`);
+      const pre     = document.getElementById(`pre-${secao}`);
+      const badge   = document.getElementById(`badge-${secao}`);
+
+      pre.textContent = JSON.stringify(data, null, 2);
+      badge.className = "badge";
+      if (ok === true)  { badge.classList.add("ok");  badge.textContent = "200 OK"; }
+      if (ok === false) { badge.classList.add("err"); badge.textContent = "Erro"; }
+      wrapper.classList.add("visible");
+    }
+
+    function renderBooks(books) {
+      const el = document.getElementById("books-list");
+      if (!books || books.length === 0) {
+        el.innerHTML = '<p class="list-empty">Nenhum livro encontrado.</p>';
+        return;
+      }
+      el.innerHTML = books.map(b => `
+        <div class="book-item">
+          <div>
+            <div class="book-title">${b.titulo || '—'}</div>
+            <div class="book-meta">${[b.autor, b.genero, b.ano].filter(Boolean).join(' · ')}</div>
+          </div>
+          <span class="book-id">#${b.id}</span>
+        </div>
+      `).join('');
+    }
+
+    async function listarLivros() {
+      try {
+        const res  = await fetch(api);
+        const data = await res.json();
+        mostrar('listar', data, res.ok);
+        if (Array.isArray(data)) renderBooks(data);
+      } catch (e) { mostrar('listar', { erro: e.message }, false); }
+    }
+
+    async function buscarLivro() {
+      const id = document.getElementById("buscarId").value;
+      if (!id) return alert("Digite um ID");
+      try {
+        const res  = await fetch(`${api}/${id}`);
+        const data = await res.json();
+        mostrar('buscar', data, res.ok);
+      } catch (e) { mostrar('buscar', { erro: e.message }, false); }
+    }
+
+    async function criarLivro() {
+      const titulo = document.getElementById("titulo").value;
+      const autor  = document.getElementById("autor").value;
+      const ano    = document.getElementById("ano").value;
+      const genero = document.getElementById("genero").value;
+      if (!titulo || !autor || !ano || !genero) return alert("Preencha todos os campos!");
+      try {
+        const res  = await fetch(api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ titulo, autor, ano: Number(ano), genero })
+        });
+        const data = await res.json();
+        mostrar('criar', data, res.ok);
+        listarLivros();
+      } catch (e) { mostrar('criar', { erro: e.message }, false); }
+    }
+
+    async function atualizarLivro() {
+      const id = document.getElementById("updateId").value;
+      if (!id) return alert("Digite o ID");
+      const body = {
+        titulo: document.getElementById("updateTitulo").value,
+        autor:  document.getElementById("updateAutor").value,
+        ano:    Number(document.getElementById("updateAno").value),
+        genero: document.getElementById("updateGenero").value
+      };
+      try {
+        const res  = await fetch(`${api}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        mostrar('atualizar', data, res.ok);
+        listarLivros();
+      } catch (e) { mostrar('atualizar', { erro: e.message }, false); }
+    }
+
+    async function deletarLivro() {
+      const id = document.getElementById("deleteId").value;
+      if (!id) return alert("Digite um ID");
+      try {
+        const res  = await fetch(`${api}/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        mostrar('deletar', data, res.ok);
+        listarLivros();
+      } catch (e) { mostrar('deletar', { erro: e.message }, false); }
+    }
+  </script>
+</body>
+</html>

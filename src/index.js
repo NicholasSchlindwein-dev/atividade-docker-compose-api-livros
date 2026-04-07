@@ -2,9 +2,11 @@ const express = require('express');
 const { connectWithRetry, getPool } = require('./db');
 
 const app = express();
+const cors = require('cors');
 const port = Number(process.env.PORT || 3000);
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send(`
